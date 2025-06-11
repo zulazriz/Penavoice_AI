@@ -12,33 +12,35 @@ interface UploadResult {
 }
 
 export async function uploadFileLocally(file: File, onProgress: (progress: UploadProgress) => void): Promise<UploadResult> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         // Simulate upload progress
         let progress = 0;
         const fileId = Math.random().toString(36).substr(2, 9);
 
+        // 🔁 Calculate realistic total duration based on file size
+        const uploadDuration = Math.min(3000, Math.max(500, file.size / 100)); // 0.5s–3s
+        const updateInterval = uploadDuration / 10; // 10 steps
+
         const interval = setInterval(() => {
-            progress += Math.random() * 20;
+            progress = Math.min(progress + Math.random() * 20, 100);
 
             if (progress >= 100) {
-                progress = 100;
                 clearInterval(interval);
 
-                onProgress({
-                    percentage: 100,
-                    loaded: file.size,
-                    total: file.size,
-                });
+                if (typeof onProgress === 'function') {
+                    onProgress({
+                        percentage: 100,
+                        loaded: file.size,
+                        total: file.size,
+                    });
+                }
 
                 // Simulate occasional upload failures (5% chance)
                 const shouldFail = Math.random() < 0.05;
 
                 setTimeout(() => {
                     if (shouldFail) {
-                        resolve({
-                            success: false,
-                            error: 'Network error occurred during upload',
-                        });
+                        reject(new Error('Network error occurred during upload'));
                     } else {
                         resolve({
                             success: true,
@@ -48,13 +50,15 @@ export async function uploadFileLocally(file: File, onProgress: (progress: Uploa
                     }
                 }, 500);
             } else {
-                onProgress({
-                    percentage: Math.round(progress),
-                    loaded: Math.round((file.size * progress) / 100),
-                    total: file.size,
-                });
+                if (typeof onProgress === 'function') {
+                    onProgress({
+                        percentage: Math.round(progress),
+                        loaded: Math.round((file.size * progress) / 100),
+                        total: file.size,
+                    });
+                }
             }
-        }, 200);
+        }, updateInterval); // ⏱ Use the calculated interval
     });
 }
 
