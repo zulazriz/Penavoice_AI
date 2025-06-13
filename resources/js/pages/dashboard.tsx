@@ -74,7 +74,7 @@ function getGreetingWithLottie() {
 
     // Define custom greetings and lottie URLs per holiday
     const holidayLottieMap: Record<string, { greeting: string; lottie: string }> = {
-        'Christmas': {
+        Christmas: {
             greeting: 'Merry Christmas!',
             lottie: 'https://lottie.host/e2f6f91e-d844-4260-9c06-8d20a019d329/g0VGV85HYC.lottie',
         },
@@ -90,11 +90,11 @@ function getGreetingWithLottie() {
             greeting: 'Selamat Hari Raya Aidiladha!',
             lottie: 'https://lottie.host/71dc0322-106c-4314-91c9-48dcfbe7f08c/Ye0hLuVuZr.lottie',
         },
-        'Ramadan': {
+        Ramadan: {
             greeting: 'Selamat Menyambut Ramadan Mubarak!',
             lottie: 'https://lottie.host/a3c8c1c0-e0df-48ae-be7a-096f1138f925/zyzjmJ85eY.lottie',
         },
-        'Deepavali': {
+        Deepavali: {
             greeting: 'Happy Deepavali!',
             lottie: 'https://lottie.host/74d59009-3533-4f50-bc21-81111b9f748a/3vasntrlft.lottie',
         },

@@ -160,18 +160,20 @@ export default function StatusJobs({ uploadedFiles = [], onUpdateFile = () => {}
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Status Jobs" />
 
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+            <div className="max-w-8xl min-h-screen">
                 <div className="container mx-auto px-4 py-8">
                     <div className="space-y-8">
                         {/* Header */}
-                        <div className="text-center">
-                            <h1 className="mb-4 text-4xl font-bold text-gray-900">Transcription Status</h1>
-                            <p className="mx-auto max-w-2xl text-xl text-gray-600">Monitor your transcription jobs and download completed results</p>
+                        <div className="mt-2 text-center">
+                            <h1 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">Transcription Status</h1>
+                            <p className="max-w-2l text-l mx-auto text-gray-600 dark:text-white">
+                                Monitor your transcription jobs and download completed results
+                            </p>
                         </div>
 
                         {/* Stats Cards */}
                         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-4">
-                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg backdrop-blur-sm">
+                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg backdrop-blur-sm dark:shadow-[0_4px_20px_rgba(255,255,255,1.0)] dark:backdrop-blur-sm">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600">Total Files</p>
@@ -181,7 +183,7 @@ export default function StatusJobs({ uploadedFiles = [], onUpdateFile = () => {}
                                 </div>
                             </div>
 
-                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg backdrop-blur-sm">
+                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg backdrop-blur-sm dark:shadow-[0_4px_20px_rgba(255,255,255,1.0)] dark:backdrop-blur-sm">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600">Completed</p>
@@ -191,7 +193,7 @@ export default function StatusJobs({ uploadedFiles = [], onUpdateFile = () => {}
                                 </div>
                             </div>
 
-                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg backdrop-blur-sm">
+                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg backdrop-blur-sm dark:shadow-[0_4px_20px_rgba(255,255,255,1.0)] dark:backdrop-blur-sm">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600">Processing</p>
@@ -201,7 +203,7 @@ export default function StatusJobs({ uploadedFiles = [], onUpdateFile = () => {}
                                 </div>
                             </div>
 
-                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg backdrop-blur-sm">
+                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-lg backdrop-blur-sm dark:shadow-[0_4px_20px_rgba(255,255,255,1.0)] dark:backdrop-blur-sm">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600">Failed</p>
@@ -215,7 +217,7 @@ export default function StatusJobs({ uploadedFiles = [], onUpdateFile = () => {}
                         {/* Files List */}
                         {sortedFiles.length > 0 ? (
                             <div className="mx-auto max-w-6xl">
-                                <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white/80 shadow-xl backdrop-blur-sm">
+                                <div className="rounded-2xl border border-gray-100 bg-white p-12 shadow-2xl backdrop-blur-sm dark:bg-white dark:shadow-[0_4px_20px_rgba(255,255,255,1.0)] dark:backdrop-blur-sm">
                                     <div className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-4">
                                         <h3 className="text-xl font-semibold text-gray-900">All Transcription Jobs</h3>
                                     </div>
@@ -366,10 +368,10 @@ export default function StatusJobs({ uploadedFiles = [], onUpdateFile = () => {}
                             </div>
                         ) : (
                             <div className="mx-auto max-w-4xl py-12 text-center">
-                                <div className="rounded-2xl border border-gray-100 bg-white/60 p-12 backdrop-blur-sm">
-                                    <FileAudio className="mx-auto mb-4 h-24 w-24 text-gray-300" />
-                                    <h3 className="mb-2 text-xl font-semibold text-gray-600">No transcription jobs yet</h3>
-                                    <p className="text-gray-500">Upload some media files to get started with transcription</p>
+                                <div className="rounded-2xl border border-gray-100 bg-white p-12 shadow-2xl backdrop-blur-sm dark:bg-white dark:shadow-[0_4px_20px_rgba(255,255,255,1.0)] dark:backdrop-blur-sm">
+                                    <FileAudio className="mx-auto mb-4 h-24 w-24 text-gray-400 dark:text-black" />
+                                    <h3 className="text-black-600 mb-2 text-xl font-semibold dark:text-black">No transcription jobs yet</h3>
+                                    <p className="text-gray-500 dark:text-black">Upload some media files to get started with transcription</p>
                                 </div>
                             </div>
                         )}
