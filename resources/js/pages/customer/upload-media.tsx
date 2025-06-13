@@ -1,10 +1,9 @@
 import Modal from '@/components/ui/modal';
 import AppLayout from '@/layouts/app-layout';
-import { formatDuration, formatFileSize, getFileDuration } from '@/lib/fileUtils'; //Local process
 // import { formatFileSize, formatDuration, getFileDuration, generateUniqueFileName } from '@/lib/fileUtils'; //Prod process
-import type { UploadedFile } from '@/pages/customer/app-upload-media';
-import { uploadFileLocally } from '@/services/uploadService';
-import type { BreadcrumbItem } from '@/types';
+import { useNotifications } from '@/contexts/NotificationContext';
+import { useModal } from '@/hooks/use-modal';
+import type { BreadcrumbItem, UploadedFile } from '@/types';
 import { Head } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { AlertCircle, CheckCircle, Clock, FileAudio, FileVideo, Upload as UploadIcon, X } from 'lucide-react';
@@ -18,110 +17,108 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface UploadMediaProps {
-    uploadedFiles: UploadedFile[];
-    onAddFiles: (files: UploadedFile[]) => void;
-    onUpdateFile: (id: string, updates: Partial<UploadedFile>) => void;
-    onRemoveFile: (id: string) => void;
-}
-
-interface ModalState {
-    isOpen: boolean;
-    type: 'success' | 'error';
-    title: string;
-    message: string;
-}
-
-export default function UploadMedia({ uploadedFiles, onAddFiles, onUpdateFile, onRemoveFile }: UploadMediaProps) {
-    const [modal, setModal] = useState<ModalState>({
-        isOpen: false,
-        type: 'success',
-        title: '',
-        message: '',
-    });
-
-    const showModal = (type: 'success' | 'error', title: string, message: string) => {
-        setModal({ isOpen: true, type, title, message });
-    };
-
-    const closeModal = () => {
-        setModal((prev) => ({ ...prev, isOpen: false }));
-    };
+export default function UploadMedia() {
+    const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+    const { modal, hideModal, showSuccess, showError } = useModal();
+    const { addNotification } = useNotifications();
 
     const processFileUpload = useCallback(
         async (uploadFile: UploadedFile) => {
             try {
-                // Get file duration
-                let duration: number | undefined;
-                try {
-                    duration = await getFileDuration(uploadFile.file);
-                    onUpdateFile(uploadFile.id, { duration });
-                } catch (error) {
-                    console.warn('Could not get file duration:', error);
-                }
+                // Simulate upload progress
+                const interval = setInterval(() => {
+                    setUploadedFiles((prev) =>
+                        prev.map((file) => {
+                            if (file.id === uploadFile.id && file.status === 'uploading') {
+                                const newProgress = Math.min(file.progress + Math.random() * 15 + 5, 100);
 
-                // Upload file
-                const uploadResult = await uploadFileLocally(uploadFile.file, (progress) => {
-                    onUpdateFile(uploadFile.id, { progress: progress.percentage });
-                });
+                                if (newProgress >= 100) {
+                                    clearInterval(interval);
 
-                // Update file status based on upload result
-                if (uploadResult.success) {
-                    const processingSteps = [
-                        { step: 'File uploaded', status: 'completed' as const, timestamp: new Date() },
-                        { step: 'Audio extraction', status: 'pending' as const },
-                        { step: 'Speech recognition', status: 'pending' as const },
-                        { step: 'Text processing', status: 'pending' as const },
-                        { step: 'Quality review', status: 'pending' as const },
-                    ];
+                                    // Simulate success/failure (95% success rate)
+                                    const isSuccess = Math.random() > 0.05;
 
-                    onUpdateFile(uploadFile.id, {
-                        status: 'pending',
-                        transcriptionId: uploadResult.fileId,
-                        filePath: uploadResult.filePath,
-                        processingSteps,
-                    });
+                                    if (isSuccess) {
+                                        // Add notification for successful upload
+                                        addNotification({
+                                            title: 'Upload Successful',
+                                            message: `${uploadFile.file.name} has been uploaded and queued for transcription.`,
+                                            type: 'success',
+                                        });
 
-                    showModal(
-                        'success',
-                        'Upload Successful!',
-                        `${uploadFile.file.name} has been uploaded successfully. Your file will be transcribed by our AI transcriptor. Please wait and be patient. We will let you know once it's done.`,
+                                        showSuccess(
+                                            'Upload Successful!',
+                                            `${uploadFile.file.name} has been uploaded successfully. Your file will be transcribed by our transcriptor. Please wait and be patient. We will let you know once it's done.`,
+                                        );
+
+                                        // Simulate transcription process after successful upload
+                                        setTimeout(() => {
+                                            addNotification({
+                                                title: 'Transcription Started',
+                                                message: `Transcription for ${uploadFile.file.name} has started. This may take a few minutes.`,
+                                                type: 'info',
+                                            });
+
+                                            setUploadedFiles((prev) =>
+                                                prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'processing' } : f)),
+                                            );
+
+                                            // Simulate transcription completion
+                                            setTimeout(
+                                                () => {
+                                                    addNotification({
+                                                        title: 'Transcription Complete',
+                                                        message: `${uploadFile.file.name} has been successfully transcribed and is ready for review.`,
+                                                        type: 'success',
+                                                    });
+
+                                                    setUploadedFiles((prev) =>
+                                                        prev.map((f) => (f.id === uploadFile.id ? { ...f, status: 'completed' } : f)),
+                                                    );
+                                                },
+                                                Math.random() * 5000 + 3000,
+                                            ); // 3-8 seconds
+                                        }, 2000); // 2 seconds delay
+
+                                        return {
+                                            ...file,
+                                            progress: 100,
+                                            status: 'pending' as const,
+                                            transcriptionId: Math.random().toString(36).substr(2, 9),
+                                        };
+                                    } else {
+                                        // Add notification for failed upload
+                                        addNotification({
+                                            title: 'Upload Failed',
+                                            message: `Failed to upload ${uploadFile.file.name}. Please try again.`,
+                                            type: 'error',
+                                        });
+
+                                        showError('Upload Failed', `Failed to upload ${uploadFile.file.name}. Please try again.`);
+                                        return { ...file, progress: 100, status: 'error' as const };
+                                    }
+                                }
+
+                                return { ...file, progress: newProgress };
+                            }
+                            return file;
+                        }),
                     );
-
-                    // Simulate transcription process
-                    setTimeout(() => {
-                        onUpdateFile(uploadFile.id, {
-                            status: 'processing',
-                            processingSteps: processingSteps.map((step, index) =>
-                                index === 1 ? { ...step, status: 'processing', timestamp: new Date() } : step,
-                            ),
-                        });
-                    }, 2000);
-
-                    setTimeout(() => {
-                        const completedSteps = processingSteps.map((step) => ({
-                            ...step,
-                            status: 'completed' as const,
-                            timestamp: new Date(),
-                        }));
-
-                        onUpdateFile(uploadFile.id, {
-                            status: 'completed',
-                            processingSteps: completedSteps,
-                            transcriptionText: `This is a sample transcription for ${uploadFile.file.name}. In a real application, this would contain the actual transcribed text from your audio/video file. The transcription would be generated using advanced AI speech recognition technology.`,
-                        });
-                    }, 8000);
-                } else {
-                    onUpdateFile(uploadFile.id, { status: 'error' });
-                    showModal('error', 'Upload Failed', uploadResult.error || `Failed to upload ${uploadFile.file.name}. Please try again.`);
-                }
+                }, 200);
             } catch (error) {
                 console.error('Upload process error:', error);
-                onUpdateFile(uploadFile.id, { status: 'error' });
-                showModal('error', 'Upload Error', `An unexpected error occurred while uploading ${uploadFile.file.name}.`);
+                setUploadedFiles((prev) => prev.map((file) => (file.id === uploadFile.id ? { ...file, status: 'error' } : file)));
+
+                addNotification({
+                    title: 'Upload Error',
+                    message: `An unexpected error occurred while uploading ${uploadFile.file.name}.`,
+                    type: 'error',
+                });
+
+                showError('Upload Error', `An unexpected error occurred while uploading ${uploadFile.file.name}.`);
             }
         },
-        [onUpdateFile],
+        [showSuccess, showError, addNotification],
     );
 
     const onDrop = useCallback(
@@ -134,10 +131,20 @@ export default function UploadMedia({ uploadedFiles, onAddFiles, onUpdateFile, o
                 uploadedAt: new Date(),
             }));
 
-            onAddFiles(newFiles);
+            setUploadedFiles((prev) => [...prev, ...newFiles]);
+
+            // Add notification for starting upload
+            if (newFiles.length > 0) {
+                addNotification({
+                    title: 'Upload Started',
+                    message: `Started uploading ${newFiles.length} file${newFiles.length > 1 ? 's' : ''}`,
+                    type: 'info',
+                });
+            }
+
             newFiles.forEach(processFileUpload);
         },
-        [onAddFiles, processFileUpload],
+        [processFileUpload, addNotification],
     );
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -152,7 +159,12 @@ export default function UploadMedia({ uploadedFiles, onAddFiles, onUpdateFile, o
             'video/avi': ['.avi'],
         },
         maxSize: 500 * 1024 * 1024, // 500MB
+        multiple: true,
     });
+
+    const removeFile = (id: string) => {
+        setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
+    };
 
     const getFileIcon = (file: File) => {
         if (file.type.startsWith('audio/')) {
@@ -171,7 +183,7 @@ export default function UploadMedia({ uploadedFiles, onAddFiles, onUpdateFile, o
                 return <AlertCircle className="h-5 w-5 text-red-500" />;
             case 'processing':
             case 'pending':
-                return <Clock className="h-5 w-5 text-blue-500" />;
+                return <Clock className="h-5 w-5 animate-spin text-blue-500" />;
             default:
                 return null;
         }
@@ -180,15 +192,15 @@ export default function UploadMedia({ uploadedFiles, onAddFiles, onUpdateFile, o
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'completed':
-                return 'bg-green-100 text-green-800';
+                return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400';
             case 'error':
-                return 'bg-red-100 text-red-800';
+                return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400';
             case 'processing':
-                return 'bg-blue-100 text-blue-800';
+                return 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400';
             case 'pending':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400';
             default:
-                return 'bg-gray-100 text-gray-800';
+                return 'bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400';
         }
     };
 
@@ -209,8 +221,13 @@ export default function UploadMedia({ uploadedFiles, onAddFiles, onUpdateFile, o
         }
     };
 
-    // Ensure uploadedFiles is always an array
-    const safeUploadedFiles = uploadedFiles || [];
+    const formatFileSize = (bytes: number) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -247,13 +264,18 @@ export default function UploadMedia({ uploadedFiles, onAddFiles, onUpdateFile, o
                 </div>
 
                 {/* Upload Area */}
-                <div className="mx-auto mt-3 max-w-4xl">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="mt-5 mb-8"
+                >
                     <div
                         {...getRootProps()}
                         className={`transform cursor-pointer rounded-2xl border-2 border-dashed p-12 text-center transition-all duration-300 hover:scale-[1.02] ${
                             isDragActive
-                                ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-blue-50 shadow-lg'
-                                : 'hover:from-purple-25 hover:to-blue-25 border-gray-300 hover:border-purple-400 hover:bg-gradient-to-br hover:shadow-lg'
+                                ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-blue-50 shadow-lg dark:from-purple-900/20 dark:to-blue-900/20'
+                                : 'hover:from-purple-25 hover:to-blue-25 border-gray-300 hover:border-purple-400 hover:bg-gradient-to-br hover:shadow-lg dark:border-gray-600 dark:hover:from-purple-900/10 dark:hover:to-blue-900/10'
                         }`}
                     >
                         <input {...getInputProps()} />
@@ -265,126 +287,139 @@ export default function UploadMedia({ uploadedFiles, onAddFiles, onUpdateFile, o
                                 <h3 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">
                                     {isDragActive ? 'Drop files here' : 'Choose files or drag them here'}
                                 </h3>
-                                <p className="mb-6 text-gray-500 dark:text-white">Supports MP3, WAV, FLAC, MP4, MOV, AVI files up to 500MB</p>
+                                <p className="mb-6 text-gray-500 dark:text-gray-400">Supports MP3, WAV, FLAC, MP4, MOV, AVI files up to 500MB each</p>
                                 <button className="transform rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-1 hover:from-purple-700 hover:to-blue-700 hover:shadow-xl">
                                     Browse Files
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Uploaded Files */}
-                {safeUploadedFiles.length > 0 && (
-                    <div className="mx-auto max-w-4xl">
-                        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
-                            <div className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-4">
-                                <h3 className="flex items-center space-x-2 text-xl font-semibold text-gray-900">
-                                    <FileAudio className="h-6 w-6 text-purple-600" />
-                                    <span>Recent Uploads ({safeUploadedFiles.length})</span>
-                                </h3>
-                            </div>
+                {uploadedFiles.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                        className="mb-20 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800"
+                    >
+                        <div className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-4 dark:border-gray-700 dark:from-purple-900/20 dark:to-blue-900/20">
+                            <h3 className="flex items-center space-x-2 text-xl font-semibold text-gray-900 dark:text-white">
+                                <FileAudio className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                                <span>Recent Uploads ({uploadedFiles.length})</span>
+                            </h3>
+                        </div>
 
-                            <div className="divide-y divide-gray-100">
-                                {safeUploadedFiles
-                                    .slice(-5)
-                                    .reverse()
-                                    .map((uploadedFile) => (
-                                        <motion.div
-                                            key={uploadedFile.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="px-6 py-4 transition-colors duration-200 hover:bg-gray-50"
-                                        >
-                                            <div className="mb-3 flex items-center justify-between">
-                                                <div className="flex items-center space-x-3">
-                                                    {getFileIcon(uploadedFile.file)}
-                                                    <div>
-                                                        <h4 className="text-sm font-semibold text-gray-900">{uploadedFile.file.name}</h4>
-                                                        <p className="text-xs text-gray-500">
-                                                            {formatFileSize(uploadedFile.file.size)}
-                                                            {uploadedFile.duration && ` • ${formatDuration(uploadedFile.duration)}`}
-                                                            {' • ' + uploadedFile.uploadedAt.toLocaleTimeString()}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    {getStatusIcon(uploadedFile.status)}
-                                                    <span
-                                                        className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(uploadedFile.status)}`}
-                                                    >
-                                                        {getStatusText(uploadedFile.status)}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => onRemoveFile(uploadedFile.id)}
-                                                        className="text-gray-400 transition-colors duration-200 hover:text-red-500"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
+                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {uploadedFiles
+                                .slice(-10)
+                                .reverse()
+                                .map((uploadedFile, index) => (
+                                    <motion.div
+                                        key={uploadedFile.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                                        className="px-6 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                    >
+                                        <div className="mb-3 flex items-center justify-between">
+                                            <div className="flex items-center space-x-3">
+                                                {getFileIcon(uploadedFile.file)}
+                                                <div>
+                                                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{uploadedFile.file.name}</h4>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {formatFileSize(uploadedFile.file.size)} • {uploadedFile.uploadedAt.toLocaleTimeString()}
+                                                    </p>
                                                 </div>
                                             </div>
+                                            <div className="flex items-center space-x-3">
+                                                {getStatusIcon(uploadedFile.status)}
+                                                <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(uploadedFile.status)}`}>
+                                                    {getStatusText(uploadedFile.status)}
+                                                </span>
+                                                <button
+                                                    onClick={() => removeFile(uploadedFile.id)}
+                                                    className="text-gray-400 transition-colors hover:text-red-500 dark:hover:text-red-400"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                            {/* Progress Bar */}
-                                            {uploadedFile.status === 'uploading' && (
-                                                <div className="space-y-2">
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="font-medium text-purple-600">Uploading...</span>
-                                                        <span className="text-gray-500">{uploadedFile.progress}%</span>
-                                                    </div>
-                                                    <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-                                                        <motion.div
-                                                            className="h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${uploadedFile.progress}%` }}
-                                                            transition={{ duration: 0.3 }}
-                                                        />
-                                                    </div>
+                                        {/* Progress Bar */}
+                                        {uploadedFile.status === 'uploading' && (
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="font-medium text-purple-600 dark:text-purple-400">Uploading...</span>
+                                                    <span className="text-gray-500 dark:text-gray-400">{Math.round(uploadedFile.progress)}%</span>
                                                 </div>
-                                            )}
+                                                <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                                                    <motion.div
+                                                        className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${uploadedFile.progress}%` }}
+                                                        transition={{ duration: 0.3 }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
 
-                                            {uploadedFile.status === 'pending' && (
-                                                <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
-                                                    <p className="flex items-center space-x-2 text-sm font-medium text-blue-700">
-                                                        <Clock className="h-4 w-4" />
-                                                        <span>
-                                                            Your uploaded file will be transcribed by transcriptor. Please wait and be patient. We
-                                                            will let you know once it's done.
-                                                        </span>
-                                                    </p>
-                                                </div>
-                                            )}
+                                        {/* Status Messages */}
+                                        {uploadedFile.status === 'pending' && (
+                                            <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                                                <p className="flex items-center space-x-2 text-sm font-medium text-blue-700 dark:text-blue-400">
+                                                    <Clock className="h-4 w-4" />
+                                                    <span>
+                                                        Your uploaded file will be transcribed by transcriptor. Please wait and be patient. We will
+                                                        let you know once it's done.
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        )}
 
-                                            {uploadedFile.status === 'processing' && (
-                                                <div className="mt-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
-                                                    <p className="flex items-center space-x-2 text-sm font-medium text-yellow-700">
-                                                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-yellow-600 border-t-transparent"></div>
-                                                        <span>Processing your file for transcription...</span>
-                                                    </p>
-                                                </div>
-                                            )}
+                                        {uploadedFile.status === 'processing' && (
+                                            <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                                                <p className="flex items-center space-x-2 text-sm font-medium text-blue-700 dark:text-blue-400">
+                                                    <Clock className="h-4 w-4 animate-spin" />
+                                                    <span>Transcription in progress... This may take a few minutes.</span>
+                                                </p>
+                                            </div>
+                                        )}
 
-                                            {uploadedFile.status === 'completed' && (
-                                                <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3">
-                                                    <p className="text-sm font-medium text-green-700">
-                                                        ✅ Transcription completed successfully! View details in Status Jobs.
-                                                    </p>
-                                                </div>
-                                            )}
+                                        {uploadedFile.status === 'completed' && (
+                                            <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+                                                <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                                                    ✅ Transcription completed successfully! View details in Status Jobs.
+                                                </p>
+                                            </div>
+                                        )}
 
-                                            {uploadedFile.status === 'error' && (
-                                                <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
-                                                    <p className="text-sm font-medium text-red-700">❌ Upload failed - Please try again</p>
-                                                </div>
-                                            )}
-                                        </motion.div>
-                                    ))}
-                            </div>
+                                        {uploadedFile.status === 'error' && (
+                                            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                                                <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                                                    ❌ Upload failed - Please try again
+                                                </p>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                ))}
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
-                <Modal isOpen={modal.isOpen} onClose={closeModal} type={modal.type} title={modal.title} message={modal.message} />
+                {/* Modal */}
+                <Modal
+                    isOpen={modal.isOpen}
+                    onClose={hideModal}
+                    type={modal.type}
+                    title={modal.title}
+                    message={modal.message}
+                    confirmText={modal.confirmText}
+                    cancelText={modal.cancelText}
+                    onConfirm={modal.onConfirm}
+                    showCancel={modal.showCancel}
+                />
             </div>
         </AppLayout>
     );

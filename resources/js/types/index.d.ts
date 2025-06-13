@@ -74,3 +74,35 @@ export interface PackageCategory {
     color: string;
     targetAudience: string;
 }
+
+export interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    read: boolean;
+    createdAt: Date;
+    data?: unknown;
+}
+
+export interface UploadedFile {
+    id: string;
+    file: File;
+    progress: number;
+    status: 'uploading' | 'pending' | 'processing' | 'completed' | 'error';
+    uploadedAt: Date;
+    duration?: number;
+    transcriptionId?: string;
+    transcriptionText?: string;
+}
+
+export interface ModalState {
+    isOpen: boolean;
+    type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    showCancel?: boolean;
+}

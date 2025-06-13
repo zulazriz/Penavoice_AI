@@ -95,7 +95,7 @@ export default function Credits() {
                 </div>
 
                 {/* Footer Information */}
-                <div className="mt-16 rounded-xl bg-gray-50 p-8">
+                <div className="mt-16 mb-10 rounded-xl bg-gray-50 p-8">
                     <div className="mb-6 text-center">
                         <h3 className="mb-4 text-2xl font-bold text-gray-900">Need Help Choosing?</h3>
                         <p className="mx-auto max-w-2xl text-gray-600">
