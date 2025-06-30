@@ -14,13 +14,13 @@ export function PackageCard({ package: pkg, categoryColor, onPurchase }: Package
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-MY').format(num);
   };
-
+  
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-MY', {
       style: 'currency',
       currency: 'MYR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(price);
   };
 

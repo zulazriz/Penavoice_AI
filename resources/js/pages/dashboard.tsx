@@ -1,48 +1,18 @@
-// import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem, SharedData } from '@/types';
+import type { AudioJob, BreadcrumbItem, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import axios from 'axios';
 import Holidays from 'date-holidays';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, CreditCard, FileText, TrendingUp, Upload } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
-    },
-];
-
-const stats = [
-    {
-        name: 'Available Credits',
-        value: '10,000',
-        icon: CreditCard,
-        color: 'text-purple-600 dark:text-purple-400',
-        bg: 'bg-purple-100 dark:bg-purple-900/20',
-    },
-    {
-        name: 'Files Processed',
-        value: '12',
-        icon: FileText,
-        color: 'text-blue-600 dark:text-blue-400',
-        bg: 'bg-blue-100 dark:bg-blue-900/20',
-    },
-    {
-        name: 'Minutes Transcribed',
-        value: '0',
-        icon: Clock,
-        color: 'text-green-600 dark:text-green-400',
-        bg: 'bg-green-100 dark:bg-green-900/20',
-    },
-    {
-        name: 'This Week',
-        value: '8',
-        icon: TrendingUp,
-        color: 'text-orange-600 dark:text-orange-400',
-        bg: 'bg-orange-100 dark:bg-orange-900/20',
     },
 ];
 
@@ -152,6 +122,62 @@ export default function Dashboard() {
     // const getInitials = useInitials();
     const user = auth?.user || { name: 'User' };
     const { greeting, lottieUrl } = getGreetingWithLottie();
+    const [filesProcessed, setFilesProcessed] = useState(0);
+    const [minutesTranscribed, setMinutesTranscribed] = useState(0);
+
+    useEffect(() => {
+        axios
+            .get('/customer/audio/audio_jobs')
+            .then((res) => {
+                const jobs: AudioJob[] = res.data?.data || [];
+                const countFile = res.data?.countFileProcessed || 0;
+
+                console.log('SDASD:', jobs);
+
+                setFilesProcessed(countFile);
+                // setFilesProcessed(jobs.length);
+
+                const totalMinutes = jobs
+                    .filter((job: AudioJob) => job.status === 'completed')
+                    .reduce((acc: number, job: AudioJob) => acc + (job.duration || 0), 0);
+
+                setMinutesTranscribed(Math.round(totalMinutes / 60));
+            })
+            .catch((err) => {
+                console.error('Error fetching audio jobs:', err);
+            });
+    }, []);
+
+    const stats = [
+        {
+            name: 'Available Credits',
+            value: user.credits?.toLocaleString() ?? '0',
+            icon: CreditCard,
+            color: 'text-purple-600 dark:text-purple-400',
+            bg: 'bg-purple-100 dark:bg-purple-900/20',
+        },
+        {
+            name: 'Files Processed',
+            value: filesProcessed.toLocaleString(),
+            icon: FileText,
+            color: 'text-blue-600 dark:text-blue-400',
+            bg: 'bg-blue-100 dark:bg-blue-900/20',
+        },
+        {
+            name: 'Minutes Transcribed',
+            value: minutesTranscribed.toLocaleString(),
+            icon: Clock,
+            color: 'text-green-600 dark:text-green-400',
+            bg: 'bg-green-100 dark:bg-green-900/20',
+        },
+        {
+            name: 'This Week',
+            value: '8',
+            icon: TrendingUp,
+            color: 'text-orange-600 dark:text-orange-400',
+            bg: 'bg-orange-100 dark:bg-orange-900/20',
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -254,7 +280,7 @@ export default function Dashboard() {
                         <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h3>
                         <div className="space-y-3">
                             <Link
-                                href=""
+                                href="/customer/upload-media"
                                 className="group flex items-center justify-between rounded-lg bg-purple-50 p-4 transition-colors hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30"
                             >
                                 <div className="flex items-center">
@@ -264,17 +290,17 @@ export default function Dashboard() {
                                 <ArrowRight className="h-4 w-4 text-purple-600 transition-transform group-hover:translate-x-1 dark:text-purple-400" />
                             </Link>
                             <Link
-                                href=""
+                                href="/customer/status-jobs"
                                 className="group flex items-center justify-between rounded-lg bg-blue-50 p-4 transition-colors hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30"
                             >
                                 <div className="flex items-center">
                                     <FileText className="mr-3 h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                    <span className="font-medium text-gray-900 dark:text-white">View All Files</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">View All Jobs</span>
                                 </div>
                                 <ArrowRight className="h-4 w-4 text-blue-600 transition-transform group-hover:translate-x-1 dark:text-blue-400" />
                             </Link>
                             <Link
-                                href=""
+                                href="/customer/credits"
                                 className="group flex items-center justify-between rounded-lg bg-green-50 p-4 transition-colors hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30"
                             >
                                 <div className="flex items-center">

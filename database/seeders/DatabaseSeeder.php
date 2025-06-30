@@ -23,8 +23,25 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
+            'role_id' => 1,
             'password' => Hash::make('admin123'),
-            'role_id' => 1
+            'credits' => 10000
+        ]);
+
+        User::factory()->create([
+            'name' => 'Testing Customer',
+            'email' => 'customer@gmail.com',
+            'role_id' => 2,
+            'password' => Hash::make('customer123'),
+            'credits' => 10000
+        ]);
+
+        User::factory()->create([
+            'name' => 'Testing Transcriptor',
+            'email' => 'transcriptor@gmail.com',
+            'role_id' => 4,
+            'password' => Hash::make('transcriptor123'),
+            'credits' => 10000
         ]);
     }
 }

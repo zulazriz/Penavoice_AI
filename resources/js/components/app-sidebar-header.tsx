@@ -6,9 +6,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { useInitials } from '@/hooks/use-initials';
 import type { BreadcrumbItem as BreadcrumbItemType, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
+import axios from 'axios';
 import { Bell, CreditCard } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -28,8 +30,14 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
         markAsRead(notificationId);
     };
 
-    // Close notifications dropdown when clicking outside
     useEffect(() => {
+        const token = page.props.auth_token;
+
+        if (typeof token === 'string' && token.length > 0) {
+            localStorage.setItem('auth_token', token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        }
+
         const handleClickOutside = (event: MouseEvent) => {
             if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
                 setShowNotifications(false);
@@ -40,7 +48,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, []);
+    }, [page.props.auth_token]);
 
     return (
         <header className="flex h-16 shrink-0 items-center border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
@@ -51,10 +59,11 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
 
             <div className="ml-auto flex items-center gap-2">
                 {/* Credits Value */}
+                {/* Credits Value */}
                 <div className="hidden items-center space-x-2 rounded-full bg-purple-50 px-3 py-1 sm:flex dark:bg-purple-500/20">
                     <CreditCard className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                    {/* <span className="text-sm font-medium text-purple-600 dark:text-purple-400">{auth?.tokens?.toLocaleString()} tokens</span> */}
-                    <span className="text-sm font-medium text-purple-600 dark:text-purple-400">10,000 Credits</span>
+                    {/* Access credits directly from auth.user, which comes from Inertia's shared data */}
+                    <span className="text-sm font-medium text-purple-600 dark:text-purple-400">{auth.user.credits.toLocaleString()} Credits</span>
                 </div>
 
                 {/* Appearance Toggle Button */}
