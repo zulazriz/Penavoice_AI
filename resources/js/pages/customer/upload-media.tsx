@@ -243,10 +243,6 @@ export default function UploadMedia() {
         multiple: true,
     });
 
-    const removeFile = (id: string) => {
-        setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
-    };
-
     const getFileIcon = (file: File) => {
         if (file.type.startsWith('audio/')) {
             return <FileAudio className="h-8 w-8 text-blue-500" />;
@@ -264,7 +260,6 @@ export default function UploadMedia() {
                 return <AlertCircle className="h-5 w-5 text-red-500" />;
             case 'processing':
             case 'pending':
-                return <Clock className="h-5 w-5 animate-spin text-blue-500" />;
                 return <Clock className="h-5 w-5 animate-spin text-blue-500" />;
             default:
                 return null;
@@ -288,18 +283,13 @@ export default function UploadMedia() {
         switch (status) {
             case 'completed':
                 return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400';
-                return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400';
             case 'error':
-                return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400';
                 return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400';
             case 'processing':
                 return 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400';
-                return 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400';
             case 'pending':
                 return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400';
-                return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400';
             default:
-                return 'bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400';
                 return 'bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400';
         }
     };
@@ -426,8 +416,6 @@ export default function UploadMedia() {
                             isDragActive
                                 ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-blue-50 shadow-lg dark:from-purple-900/20 dark:to-blue-900/20'
                                 : 'hover:from-purple-25 hover:to-blue-25 border-gray-300 hover:border-purple-400 hover:bg-gradient-to-br hover:shadow-lg dark:border-gray-600 dark:hover:from-purple-900/10 dark:hover:to-blue-900/10'
-                                ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-blue-50 shadow-lg dark:from-purple-900/20 dark:to-blue-900/20'
-                                : 'hover:from-purple-25 hover:to-blue-25 border-gray-300 hover:border-purple-400 hover:bg-gradient-to-br hover:shadow-lg dark:border-gray-600 dark:hover:from-purple-900/10 dark:hover:to-blue-900/10'
                         }`}
                     >
                         <input {...getInputProps()} />
@@ -446,7 +434,6 @@ export default function UploadMedia() {
                             </div>
                         </div>
                     </div>
-                </motion.div>
                 </motion.div>
 
                 {/* Uploaded Files */}
@@ -542,23 +529,6 @@ export default function UploadMedia() {
                                             </div>
                                         </div>
 
-                                        {/* Progress Bar */}
-                                        {uploadedFile.status === 'uploading' && (
-                                            <div className="space-y-2">
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="font-medium text-purple-600 dark:text-purple-400">Uploading...</span>
-                                                    <span className="text-gray-500 dark:text-gray-400">{Math.round(uploadedFile.progress)}%</span>
-                                                </div>
-                                                <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                                                    <motion.div
-                                                        className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${uploadedFile.progress}%` }}
-                                                        transition={{ duration: 0.3 }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
                                         {/* Progress Bar */}
                                         {uploadedFile.status === 'uploading' && (
                                             <div className="space-y-2">

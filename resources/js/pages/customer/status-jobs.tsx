@@ -203,7 +203,6 @@ export default function StatusJobs() {
             <Head title="Status Jobs" />
 
             <div className="max-w-8xl min-h-screen">
-            <div className="max-w-8xl min-h-screen">
                 <div className="container mx-auto px-4 py-8">
                     <div className="space-y-8">
                         {/* Header */}
