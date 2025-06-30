@@ -146,7 +146,7 @@ export default function Register({ roles }: Props) {
                             disabled={processing}
                             className="rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 Choose
                             </option>
                             {roles.map((role) => (

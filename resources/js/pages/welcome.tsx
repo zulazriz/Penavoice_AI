@@ -837,7 +837,7 @@ export default function Welcome() {
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-600">
                                     <Mic className="h-5 w-5 text-white" />
                                 </div>
-                                <span className="text-xl font-bold text-gray-900 dark:text-white">Penavoice  AI</span>
+                                <span className="text-xl font-bold text-gray-900 dark:text-white">Penavoice AI</span>
                             </div>
                             <div className="flex items-center space-x-4">
                                 {auth.user ? (
@@ -911,7 +911,7 @@ export default function Welcome() {
                 <section className="bg-white py-20 dark:bg-gray-800">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="mb-16 text-center">
-                            <h2 className="mb-4 text-3xl font-bold text-gray-900 lg:text-4xl dark:text-white">Why Choose Penavoice  AI</h2>
+                            <h2 className="mb-4 text-3xl font-bold text-gray-900 lg:text-4xl dark:text-white">Why Choose Penavoice AI</h2>
                             <p className="text-xl text-gray-600 dark:text-gray-300">Professional-grade features for accurate transcription</p>
                         </div>
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -1006,10 +1006,10 @@ export default function Welcome() {
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-600">
                                     <Mic className="h-5 w-5 text-white" />
                                 </div>
-                                <span className="text-xl font-bold">Penavoice  AI</span>
+                                <span className="text-xl font-bold">Penavoice AI</span>
                             </div>
                             <p className="mb-4 text-gray-400">Professional speech-to-text transcription powered by AI</p>
-                            <p className="text-sm text-gray-500">© {new Date().getFullYear()} Penavoice  AI. All rights reserved.</p>
+                            <p className="text-sm text-gray-500">© {new Date().getFullYear()} Penavoice AI. All rights reserved.</p>
                         </div>
                     </div>
                 </footer>

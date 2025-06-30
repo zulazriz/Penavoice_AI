@@ -3,9 +3,9 @@ import { PackageCard } from '@/components/ui/package-card';
 import { creditPackages } from '@/data/creditPackages';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Building, Building2, Factory, User } from 'lucide-react';
-import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
+import { Building, Building2, Factory, User } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -84,7 +84,13 @@ export default function Credits() {
                                     color={category.color}
                                 />
 
-                                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                                <div
+                                    className="grid gap-8"
+                                    style={{
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
+                                        maxWidth: '100%',
+                                    }}
+                                >
                                     {category.packages.map((pkg) => (
                                         <PackageCard key={pkg.id} package={pkg} categoryColor={category.color} onPurchase={handlePurchase} />
                                     ))}

@@ -29,6 +29,7 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    auth_token?: string;
     [key: string]: unknown;
 }
 
@@ -44,6 +45,7 @@ export interface User {
     role_id: number;
     role?: Role;
     avatar?: string;
+    credits: number;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -75,27 +77,6 @@ export interface PackageCategory {
     targetAudience: string;
 }
 
-export interface Notification {
-    id: string;
-    title: string;
-    message: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-    read: boolean;
-    createdAt: Date;
-    data?: unknown;
-}
-
-export interface UploadedFile {
-    id: string;
-    file: File;
-    progress: number;
-    status: 'uploading' | 'pending' | 'processing' | 'completed' | 'error';
-    uploadedAt: Date;
-    duration?: number;
-    transcriptionId?: string;
-    transcriptionText?: string;
-}
-
 export interface ModalState {
     isOpen: boolean;
     type: 'success' | 'error' | 'warning' | 'info' | 'confirm';
@@ -105,4 +86,70 @@ export interface ModalState {
     cancelText?: string;
     onConfirm?: () => void;
     showCancel?: boolean;
+}
+
+export interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    read: boolean; // This controls highlight state - false = highlighted/new, true = read/no highlight
+    createdAt: Date;
+    data?: unknown;
+}
+
+export interface ProcessingStep {
+    step: string;
+    status: 'pending' | 'processing' | 'completed' | 'error';
+    timestamp?: Date;
+}
+
+export interface UploadedFile {
+    id: string;
+    file: File;
+    progress: number;
+    status: 'uploading' | 'pending' | 'processing' | 'completed' | 'error';
+    uploadedAt: Date;
+    duration?: number; // EXACT duration in seconds (with decimals)
+    creditsRequired?: number; // EXACT credits required based on processing duration and pricing
+    creditsUsed?: number; // Actual credits deducted after processing (should match creditsRequired)
+    processingDays?: number; // Processing duration selected (3, 7, 14, or 21 days)
+    transcriptionId?: string;
+    transcriptionText?: string;
+    processingSteps?: ProcessingStep[];
+}
+
+export interface UploadedFilesContextType {
+    uploadedFiles: UploadedFile[];
+    addFiles: (files: UploadedFile[]) => void;
+    updateFile: (id: string, updates: Partial<UploadedFile> | ((prev: UploadedFile) => Partial<UploadedFile>)) => void;
+    removeFile: (id: string) => void;
+    clearAllFiles: () => void;
+}
+
+// Media file metadata interface - represents accurate file analysis
+export interface MediaFileMetadata {
+    fileName: string;
+    fileSize: number; // Exact file size in bytes
+    fileType: string;
+    duration: number; // EXACT duration in seconds (with decimals)
+    creditsRequired: number; // Display minutes (rounded up) for reference only
+    lastModified: number;
+}
+
+export interface AudioJob {
+    id: number;
+    user_id: number;
+    job_id: string;
+    file_name: string;
+    file_path?: string;
+    file_size?: string | number;
+    mime_type?: string;
+    status: 'queued' | 'processing' | 'completed' | 'failed';
+    current_step?: string;
+    error?: string;
+    transcription?: string;
+    duration?: number; // Make sure your backend includes this field if needed
+    created_at: string;
+    updated_at: string;
 }

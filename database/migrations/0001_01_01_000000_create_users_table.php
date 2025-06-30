@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->foreignId('role_id')->constrained('roles');;
             $table->string('password');
+            $table->number('credits');
             $table->rememberToken();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
