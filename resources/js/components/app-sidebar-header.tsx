@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { useInitials } from '@/hooks/use-initials';
 import type { BreadcrumbItem as BreadcrumbItemType, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -57,6 +58,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+                {/* Credits Value */}
                 {/* Credits Value */}
                 <div className="hidden items-center space-x-2 rounded-full bg-purple-50 px-3 py-1 sm:flex dark:bg-purple-500/20">
                     <CreditCard className="h-4 w-4 text-purple-600 dark:text-purple-400" />
